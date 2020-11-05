@@ -3,7 +3,7 @@ import java.net.*;
 import java.util.ArrayList;
 
 public class Server {
-    private static final ArrayList<ClientThread> clients = new ArrayList<ClientThread>();
+    private static final ArrayList<ClientThread> clients = new ArrayList<>();
 
     private static class ClientThread implements Runnable{
         Socket socket;
@@ -15,10 +15,6 @@ public class Server {
             this.socket = socket;
             this.readMessage = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.sendMessage = new DataOutputStream(socket.getOutputStream());
-            sendMessage.writeBytes("Welcome to the NP chatroom! Please type your name and press enter...\r\n");
-            this.name = readMessage.readLine();
-            sendMessage.writeBytes("Hello " + name + "! If you ever want to quit type \"quit\" to exit.\r\n");
-            this.send(name + " has joined the chat!", this);
         }
         @Override
         public void run() {
@@ -30,6 +26,10 @@ public class Server {
         }
 
         public void fromClient() throws Exception {
+            sendMessage.writeBytes("Welcome to the NP chatroom! Please type your name and press enter...\r\n");
+            this.name = readMessage.readLine();
+            sendMessage.writeBytes("Hello " + name + "! If you ever want to quit type \"quit\" to exit.\r\n");
+            this.send(name + " has joined the chat!", this);
             while(true){
                 String msg = readMessage.readLine();
                 System.out.println("loop");
@@ -65,7 +65,7 @@ public class Server {
         System.out.println("Server Ready\n");
 
         while (true) {
-            Socket clientSocket = serverSocket.accept();;
+            Socket clientSocket = serverSocket.accept();
             ClientThread newClient = new ClientThread(clientSocket);
             clients.add(newClient);
             Thread cthread = new Thread(newClient);
