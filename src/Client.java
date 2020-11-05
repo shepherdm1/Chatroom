@@ -1,70 +1,64 @@
-
-import java.io.*;
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
 import java.util.Scanner;
 
-class Client {
+public class Client {
     static Scanner s;
     static DataOutputStream outToServer;
 
-    private static class ClientThread implements Runnable{
-        Socket socket;
+    public static void main(String[] args) throws Exception {
+        @SuppressWarnings("resource")
+		Socket connectionSocket = new Socket("localhost", 9999);
+
+        DataOutputStream outToServer = new DataOutputStream(connectionSocket.getOutputStream());
+        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+        
+        new Thread(new ClientRead(inFromServer)).start();
+        new Thread(new ClientWrite(outToServer)).start();
+    }
+    
+    private static class ClientRead implements Runnable {
         BufferedReader inFromServer;
 
-        public ClientThread(Socket socket) throws Exception {
-            this.socket = socket;
-            this.inFromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        public ClientRead(BufferedReader inFromServer) {
+            this.inFromServer = inFromServer;
         }
 
         @Override
         public void run() {
-            try{
-
-                recieve();
-            }
-            catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-
-        public void recieve() throws IOException {
-            while(true){
-                if(inFromServer.readLine().equals("Welcome to the NP chatroom! Please type your name and press enter...")) {
-                    System.out.println("Welcome to the NP chatroom! Please type your name and press enter...");
-                    outToServer.writeBytes(s.nextLine());
-                }
-                else if(inFromServer.readLine().equals("Goodbye")) {
-
-                    System.out.println("Goodbye");
+            while (true) {
+                try {
+                    System.out.println(inFromServer.readLine());
+                } catch (IOException e) {
+                    e.printStackTrace();
                     break;
                 }
-                else {
-                    System.out.println(inFromServer.readLine());
+            }
+        }
+    }
+
+    private static class ClientWrite implements Runnable {
+        DataOutputStream outToServer;
+
+        public ClientWrite(DataOutputStream outToServer) {
+            this.outToServer = outToServer;
+        }
+        @Override
+        public void run() {
+            @SuppressWarnings("resource")
+			Scanner s = new Scanner(System.in);
+            while (true) {
+                try {
+                    outToServer.writeBytes(s.nextLine()+"\r\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    break;
                 }
             }
         }
     }
-
-    public static void main(String[] args) throws Exception {
-        Socket socket = new Socket("localhost", 9999);
-
-        ClientThread reciever = new ClientThread(socket);
-        Thread cthread = new Thread(reciever);
-        cthread.start();
-
-        outToServer = new DataOutputStream(socket.getOutputStream());
-        s = new Scanner(System.in);
-
-        while(!socket.isClosed()) {
-            if(s.nextLine().equals("quit")) {
-                outToServer.writeBytes("quit");
-                break;
-            }
-            else {
-                outToServer.writeBytes(s.nextLine());
-            }
-        }
-
-
-    }
 }
+

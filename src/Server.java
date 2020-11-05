@@ -1,4 +1,3 @@
-
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
@@ -16,9 +15,9 @@ public class Server {
             this.socket = socket;
             this.readMessage = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.sendMessage = new DataOutputStream(socket.getOutputStream());
-            sendMessage.writeBytes("Welcome to the NP chatroom! Please type your name and press enter...");
+            sendMessage.writeBytes("Welcome to the NP chatroom! Please type your name and press enter...\r\n");
             this.name = readMessage.readLine();
-            sendMessage.writeBytes("Hello" + name + "! If you ever want to quit type \"quit\" to exit.");
+            sendMessage.writeBytes("Hello " + name + "! If you ever want to quit type \"quit\" to exit.\r\n");
             this.send(name + " has joined the chat!", this);
         }
         @Override
@@ -53,7 +52,7 @@ public class Server {
             }
         }
         public void toClient(String msg) throws Exception {
-            sendMessage.writeBytes(this.name + ": " + msg);
+            sendMessage.writeBytes(this.name + ": " + msg + "\r\n");
         }
         void endClient(){
             clients.removeIf(client -> client.equals(this));
