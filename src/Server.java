@@ -34,6 +34,7 @@ public class Server {
                 String msg = readMessage.readLine();
                 System.out.println("loop");
                 if(msg!=null&&msg.equals("quit")){
+                	this.send(name + " has left the chat.", this);
                     socket.close();
                     break;
                 }
@@ -47,12 +48,12 @@ public class Server {
             System.out.println(msg);
             for (ClientThread client : clients) {
                 if (!client.equals(exclude)) {
-                    client.toClient(msg);
+                    client.toClient(this.name, msg);
                 }
             }
         }
-        public void toClient(String msg) throws Exception {
-            sendMessage.writeBytes(this.name + ": " + msg + "\r\n");
+        public void toClient(String name, String msg) throws Exception {
+            sendMessage.writeBytes(name + ": " + msg + "\r\n");
         }
         void endClient(){
             clients.removeIf(client -> client.equals(this));

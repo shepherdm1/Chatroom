@@ -52,7 +52,9 @@ public class Client {
 			Scanner s = new Scanner(System.in);
             while (true) {
                 try {
-                    outToServer.writeBytes(s.nextLine()+"\r\n");
+                	String msg = s.nextLine();
+                	outToServer.writeBytes(msg+"\r\n");
+                    if (msg.equals("quit")) System.exit(0);
                 } catch (IOException e) {
                     e.printStackTrace();
                     break;
