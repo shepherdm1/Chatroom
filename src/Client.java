@@ -54,7 +54,7 @@ public class Client {
                 try {
                 	String msg = s.nextLine();
                 	outToServer.writeBytes(msg+"\r\n");
-                    if (msg.equals("quit")) System.exit(0);
+                    if (msg.equals("{quit}")) System.exit(0);
                 } catch (IOException e) {
                     e.printStackTrace();
                     break;

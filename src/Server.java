@@ -28,32 +28,33 @@ public class Server {
         public void fromClient() throws Exception {
             sendMessage.writeBytes("Welcome to the NP chatroom! Please type your name and press enter...\r\n");
             this.name = readMessage.readLine();
-            sendMessage.writeBytes("Hello " + name + "! If you ever want to quit type \"quit\" to exit.\r\n");
-            this.send(name + " has joined the chat!", this);
+            sendMessage.writeBytes("Hello " + name + "! If you ever want to quit type \"{quit}\" to exit.\r\n");
+            this.send(name + " has joined the chat!", this, false);
+            System.out.println(name + " has joined the chat!");
             while(true){
                 String msg = readMessage.readLine();
-                System.out.println("loop");
-                if(msg!=null&&msg.equals("quit")){
-                	this.send(name + " has left the chat.", this);
+                if(msg!=null&&msg.equals("{quit}")){
+                	this.send(name + " has left the chat.", this, false);
+                	System.out.println(name + " has left the chat!");
                     socket.close();
                     break;
                 }
                 else {
-                    send(msg, this);
+                    send(msg, this, true);
                 }
             }
             endClient();
         }
-        public void send(String msg, ClientThread exclude) throws Exception {
-            System.out.println(msg);
+        public void send(String msg, ClientThread exclude, boolean includeUsername) throws Exception {
             for (ClientThread client : clients) {
                 if (!client.equals(exclude)) {
-                    client.toClient(this.name, msg);
+                    client.toClient(this.name, msg, includeUsername);
                 }
             }
         }
-        public void toClient(String name, String msg) throws Exception {
-            sendMessage.writeBytes(name + ": " + msg + "\r\n");
+        public void toClient(String name, String msg, boolean includeUsername) throws Exception {
+            if (includeUsername) sendMessage.writeBytes(name + ": " + msg + "\r\n");
+            else sendMessage.writeBytes(msg + "\r\n");
         }
         void endClient(){
             clients.removeIf(client -> client.equals(this));
@@ -63,7 +64,7 @@ public class Server {
 
     public static void main(String[] args) throws Exception {
         ServerSocket serverSocket = new ServerSocket(9999);
-        System.out.println("Server Ready\n");
+        System.out.println("Server Ready, Waiting for connection...");
 
         while (true) {
             Socket clientSocket = serverSocket.accept();
